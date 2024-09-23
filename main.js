@@ -1,19 +1,15 @@
 import fetch from 'node-fetch';
 import { v4 as uuidv4 } from 'uuid';
 import log4js from 'log4js';
+import HttpsProxyAgent from 'https-proxy-agent'; // Jika Anda menggunakan proxy
 
 const logger = log4js.getLogger();
+logger.level = 'info'; // Set level logging
 
-// Sisa kode tetap sama
-
-const fetch = require('node-fetch');
-const { v4: uuidv4 } = require('uuid');
-const logger = require('log4js').getLogger();
-
-// Constants
+// Konstanta
 const NP_TOKEN = "WRITE_YOUR_NP_TOKEN_HERE";
-const PING_INTERVAL = 30000; // 30 seconds
-const RETRIES_LIMIT = 60; // Global retry counter for ping failures
+const PING_INTERVAL = 30000; // 30 detik
+const RETRIES_LIMIT = 60; // Batas retry global untuk kegagalan ping
 
 const DOMAIN_API = {
   SESSION: "https://api.nodepay.ai/api/auth/session",
@@ -31,13 +27,15 @@ let tokenInfo = NP_TOKEN;
 let browserId = null;
 let accountInfo = {};
 
+// Fungsi validasi respons
 function validResp(resp) {
-  if (!resp || !resp.code || resp.code < 0) {
+  if (!resp || resp.code < 0) {
     throw new Error("Invalid response");
   }
   return resp;
 }
 
+// Fungsi untuk merender info profil
 async function renderProfileInfo(proxy) {
   try {
     const npSessionInfo = loadSessionInfo(proxy);
@@ -69,6 +67,7 @@ async function renderProfileInfo(proxy) {
   }
 }
 
+// Fungsi untuk melakukan panggilan API
 async function callApi(url, data, proxy) {
   const headers = {
     "Authorization": `Bearer ${tokenInfo}`,
@@ -95,6 +94,7 @@ async function callApi(url, data, proxy) {
   }
 }
 
+// Fungsi untuk memulai ping
 async function startPing(proxy) {
   try {
     await ping(proxy);
@@ -106,6 +106,7 @@ async function startPing(proxy) {
   }
 }
 
+// Fungsi untuk melakukan ping
 async function ping(proxy) {
   let retries = 0;
 
@@ -130,6 +131,7 @@ async function ping(proxy) {
   }
 }
 
+// Fungsi untuk menangani kegagalan ping
 function handlePingFail(proxy, response) {
   if (response && response.code === 403) {
     handleLogout(proxy);
@@ -138,32 +140,38 @@ function handlePingFail(proxy, response) {
   }
 }
 
+// Fungsi untuk menangani logout
 function handleLogout(proxy) {
   tokenInfo = null;
   statusConnect = CONNECTION_STATES.NONE_CONNECTION;
   accountInfo = {};
-  saveStatus(proxy, null);
+  saveSessionInfo(proxy, null);
   logger.info(`Logged out and cleared session info for proxy ${proxy}`);
 }
 
+// Fungsi untuk memuat session info
 function loadSessionInfo(proxy) {
-  // Implement session loading logic here
+  // Implementasi memuat sesi
   return {};
 }
 
+// Fungsi untuk menyimpan session info
 function saveSessionInfo(proxy, data) {
-  // Implement session saving logic here
+  // Implementasi penyimpanan sesi
 }
 
+// Fungsi untuk memvalidasi proxy
 function isValidProxy(proxy) {
-  // Validate proxy format or connection here
+  // Validasi proxy
   return true;
 }
 
+// Fungsi untuk menghapus proxy dari daftar
 function removeProxyFromList(proxy) {
-  // Implement logic to remove proxy from the list
+  // Implementasi penghapusan proxy
 }
 
+// Fungsi utama
 async function main() {
   const allProxies = loadProxies('proxy.txt');
   let activeProxies = allProxies.slice(0, 100).filter(isValidProxy);
@@ -186,17 +194,20 @@ async function main() {
         tasks.set(renderProfileInfo(newProxy), newProxy);
       }
     }
+
     tasks.delete(doneTask);
 
-    await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds before next task
+    await new Promise(resolve => setTimeout(resolve, 3000)); // Tunggu 3 detik sebelum tugas berikutnya
   }
 }
 
+// Fungsi untuk memuat proxy dari file
 function loadProxies(proxyFile) {
-  // Implement logic to load proxies from file
+  // Implementasi untuk memuat proxy dari file
   return [];
 }
 
+// Menangani SIGINT (Ctrl+C)
 process.on('SIGINT', () => {
   logger.info("Program terminated by user.");
   process.exit();
