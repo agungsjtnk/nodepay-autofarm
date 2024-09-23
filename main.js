@@ -1,3 +1,11 @@
+import fetch from 'node-fetch';
+import { v4 as uuidv4 } from 'uuid';
+import log4js from 'log4js';
+
+const logger = log4js.getLogger();
+
+// Sisa kode tetap sama
+
 const fetch = require('node-fetch');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('log4js').getLogger();
